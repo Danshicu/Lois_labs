@@ -59,7 +59,7 @@ bool AlphabetCheck(string formula) //проверка формулы на символы принадлежащие а
         bool out = 0;
         if (formula[i] >= 65 && formula[i] <= 90) //letters check
             out = 1;
-        else if (formula[i] >= 48 && formula[i] <= 57)
+        else if (formula[i] == '0' || formula[i] == '1')    //else if (formula[i] >= 48 && formula[i] <= 57)
             out = 1;
         else
         {
@@ -72,54 +72,59 @@ bool AlphabetCheck(string formula) //проверка формулы на символы принадлежащие а
     }
     return 1;
 } //Сделал
-void ParseFormula(string formula, vector <LogicalThing>& ParsedVector) // парсинг формулы на логические элементы
+bool ParseFormula(string formula, vector <LogicalThing>& ParsedVector) // парсинг формулы на логические элементы
 {
     for (int i = 0; i < formula.size(); i++)
     {
         LogicalThing newThing;
-        if (formula[i] == '(')                 //открывающая скобка
+        if (formula[i] == '(') //открывающая скобка
         {
             newThing.isInBracket = 1;
             ParsedVector.push_back(newThing);
         }
-        else if (formula[i] == ')')           //закрывающая скобка
+        else if (formula[i] == ')') //закрывающая скобка
         {
             newThing.isOutBracket = 1;
             ParsedVector.push_back(newThing);
         }
-        else if (formula[i] >= 65 && formula[i] <= 90)     //переменные
+        else if (formula[i] >= 65 && formula[i] <= 90) //переменные
         {
             newThing.isVariable = 1;
             ParsedVector.push_back(newThing);
+            /*
             if (i + 1 < formula.size() && (formula[i + 1] >= 49 && formula[i + 1] <= 57))
                 while ((formula[i + 1] >= 48 && formula[i + 1] <= 57) && i + 1 < formula.size())
                 {
                     i++;
                 }
+                */
         }
-        else if (formula[i] == '0' || formula[i] == '1')    //константы
+        else if (formula[i] == '0' || formula[i] == '1') //константы
         {
             newThing.isVariable = 1;
             ParsedVector.push_back(newThing);
         }
-        else if ((formula[i] == '/' && formula[i + 1] == '\\') || (formula[i] == '\\' && formula[i + 1] == '/') || (formula[i] == '-' && formula[i + 1] == '>'))   //бинарные операторы из двух символов
+        else if ((formula[i] == '/' && formula[i + 1] == '\\') || (formula[i] == '\\' && formula[i + 1] == '/') || (formula[i] == '-' && formula[i + 1] == '>')) //бинарные операторы из двух символов
         {
             newThing.isBinOperator = 1;
             ParsedVector.push_back(newThing);
             i += 1;
             continue;
         }
-        else if (formula[i] == '~')              //бинарные операторы из одного символа
+        else if (formula[i] == '~') //бинарные операторы из одного символа
         {
             newThing.isBinOperator = 1;
             ParsedVector.push_back(newThing);
         }
-        else if (formula[i] == '!')             //унарные операторы из одного символа
+        else if (formula[i] == '!') //унарные операторы из одного символа
         {
             newThing.isUnOperator = 1;
             ParsedVector.push_back(newThing);
         }
+        else
+            return 0;
     }
+    return 1;
 }
 bool OneOperatorForOneBracketCheck(vector <LogicalThing> ParsedVector, int& index) // проверка на наличие хотябы одного оператора внутри одной пары скобок
 {
@@ -172,7 +177,10 @@ bool DoubleBracketCheck(vector <LogicalThing> ParsedVector) // проверка на налич
 bool LogicalCheck(string formula) // проверка на расстановку элементов в формуле
 {
     vector <LogicalThing> parsedFormula;
-    ParseFormula(formula, parsedFormula);
+    bool parseErr = 0;
+    parseErr = !ParseFormula(formula, parsedFormula);
+    if (parseErr == 1)
+        return 0;
     if (parsedFormula.size() < 3)
         return 0;
     int zero = 0;
@@ -189,7 +197,7 @@ bool LogicalCheck(string formula) // проверка на расстановку элементов в формуле
             if (!((parsedFormula[i + 1].isInBracket == 1) || (parsedFormula[i + 1].isUnOperator == 1) || (parsedFormula[i + 1].isVariable == 1)))
                 return 0;
         }
-        else if (parsedFormula[i].isVariable == 1)//проверка последующих логических элементов после переменной 
+        else if (parsedFormula[i].isVariable == 1)//проверка последующих логических элементов после переменной
         {
             if (!((parsedFormula[i + 1].isOutBracket == 1) || (parsedFormula[i + 1].isBinOperator == 1)))
                 return 0;
@@ -214,15 +222,34 @@ bool LogicalCheck(string formula) // проверка на расстановку элементов в формуле
 }
 bool VariablesCheck(string formula, set <string>& variables) //проверка переменных на синтаксис
 {
-    for (int i = 0; i < formula.size(); i++)             //перебирая строку находим букву 
-    {                                                     // заменяем букву и все дальнейшие символы соответствующие синтаксису на "_"
+    for (int i = 0; i < formula.size(); i++) //перебирая строку находим букву
+    { // заменяем букву и все дальнейшие символы соответствующие синтаксису на "_"
         string buffer = "";
-        if (((formula[i] >= 65 && formula[i] <= 90) || (formula[i] == '0' || formula[i] == '1')) && !(i >= formula.size() - 1))
+        if ((formula[i] == '0' || formula[i] == '1') && i <= formula.size() - 1)
+        {
+            if (!((formula[i + 1] >= 65 && formula[i + 1] <= 90) || (formula[i + 1] >= 48 && formula[i + 1] <= 57)))
+                formula[i] = '_';
+            else
+                continue;
+        }
+        if ((formula[i] >= 65 && formula[i] <= 90) && i <= formula.size() - 1)
+        {
+            if (!((formula[i + 1] >= 65 && formula[i + 1] <= 90) || (formula[i + 1] >= 48 && formula[i + 1] <= 57))) 
+            {
+                buffer.push_back(formula[i]);
+                variables.insert(buffer);
+                formula[i] = '_';
+            }
+            else
+                continue;
+        }
+        /*
+        if (((formula[i] >= 65 && formula[i] <= 90) || (formula[i] == '0' || formula[i] == '1')) && (i < formula.size() - 1))
         {
             buffer.push_back(formula[i]);
             formula[i] = '_';
             i++;
-            while (((formula[i] >= 65 && formula[i] <= 90) || (formula[i] >= 48 && formula[i] <= 57)) && !(i >= formula.size() - 1))
+            while (((formula[i] >= 65 && formula[i] <= 90) || (formula[i] >= 48 && formula[i] <= 57)) && (i < formula.size() - 1))
             {
                 buffer.push_back(formula[i]);
                 formula[i] = '_';
@@ -230,13 +257,10 @@ bool VariablesCheck(string formula, set <string>& variables) //проверка переменн
             }
             variables.insert(buffer);
         }
-        if ((formula[i] == '0' || formula[i] == '0') && i <= formula.size() - 1)
-        {
-            if (!((formula[i + 1] >= 65 && formula[i + 1] <= 90) || (formula[i + 1] >= 48 && formula[i + 1] <= 57)))
-                formula[i] = '_';
-        }
+        */
+
     }
-    bool isThereNoWrongSymbols = 1;                //проверяем строку на наличие незамененных символов
+    bool isThereNoWrongSymbols = 1; //проверяем строку на наличие незамененных символов
     for (int i = 0; i < formula.size(); i++)
         if ((formula[i] >= 65 && formula[i] <= 90) || (formula[i] >= 48 && formula[i] <= 57))
             isThereNoWrongSymbols = 0;
@@ -256,24 +280,25 @@ bool CheckSymbolsAroundOperator(string formula, int i)
 
 bool CheckOperators(string formula)
 {
-    for (int i = 0; i <= formula.size(); i++)
+    for (int i = 0; i < formula.size(); i++)
     {
         char currentChar = formula[i];
-        if (currentChar == '/' && formula[i + 1] == '\\')
+        char nextChar = formula[i + 1];
+        if (currentChar == '/' && nextChar == '\\')
             if (!CheckSymbolsAroundOperator(formula, i))
             {
                 return 0;
             }
             else
                 continue;
-        if ((currentChar == '\\' && formula[i + 1] == '/'))
+        if ((currentChar == '\\' && nextChar == '/'))
             if (!CheckSymbolsAroundOperator(formula, i))
             {
                 return 0;
             }
             else
                 continue;
-        if ((currentChar == '-' && formula[i + 1] == '>'))
+        if ((currentChar == '-' && nextChar == '>'))
             if (!CheckSymbolsAroundOperator(formula, i))
             {
                 return 0;
@@ -289,7 +314,9 @@ bool isFormula(string formula)
 {
     if ((formula[0] == '1' || formula[0] == '0') && formula.size() == 1) //проверка формулы состоящей из одной константы
         return 1;
-    if (formula[0] >= 65 && formula[0] <= 90)     //проверка формулы состоящей из одной переменной
+    if ((formula[0] >= 65 && formula[0] <= 90) && formula.size() == 1) //проверка формулы состоящей из одной константы
+        return 1;
+    /*if (formula[0] >= 65 && formula[0] <= 90)     //проверка формулы состоящей из одной переменной
     {
         int i = 0;
         if (i + 1 < formula.size() && (formula[i + 1] >= 49 && formula[i + 1] <= 57))
@@ -302,6 +329,7 @@ bool isFormula(string formula)
         else
             return 0;
     }
+    */
     if (!BraсketCheck(formula))//проверка скобок
         return 0;
     if (!AlphabetCheck(formula))//проверка алфавита
