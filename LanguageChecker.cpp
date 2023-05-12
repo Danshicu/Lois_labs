@@ -91,13 +91,6 @@ bool ParseFormula(string formula, vector <LogicalThing>& ParsedVector) // парсин
         {
             newThing.isVariable = 1;
             ParsedVector.push_back(newThing);
-            /*
-            if (i + 1 < formula.size() && (formula[i + 1] >= 49 && formula[i + 1] <= 57))
-                while ((formula[i + 1] >= 48 && formula[i + 1] <= 57) && i + 1 < formula.size())
-                {
-                    i++;
-                }
-                */
         }
         else if (formula[i] == '0' || formula[i] == '1') //константы
         {
@@ -227,14 +220,14 @@ bool VariablesCheck(string formula, set <string>& variables) //проверка переменн
         string buffer = "";
         if ((formula[i] == '0' || formula[i] == '1') && i <= formula.size() - 1)
         {
-            if (!((formula[i + 1] >= 65 && formula[i + 1] <= 90) || (formula[i + 1] >= 48 && formula[i + 1] <= 57)))
+            if (!((formula[i + 1] >= 65 && formula[i + 1] <= 90) || (formula[i + 1] == '0' || formula[i+1] == '1')))
                 formula[i] = '_';
             else
                 continue;
         }
         if ((formula[i] >= 65 && formula[i] <= 90) && i <= formula.size() - 1)
         {
-            if (!((formula[i + 1] >= 65 && formula[i + 1] <= 90) || (formula[i + 1] >= 48 && formula[i + 1] <= 57))) 
+            if (!((formula[i + 1] >= 65 && formula[i + 1] <= 90) || (formula[i + 1] == '0' || formula[i + 1] == '1')))
             {
                 buffer.push_back(formula[i]);
                 variables.insert(buffer);
@@ -243,40 +236,24 @@ bool VariablesCheck(string formula, set <string>& variables) //проверка переменн
             else
                 continue;
         }
-        /*
-        if (((formula[i] >= 65 && formula[i] <= 90) || (formula[i] == '0' || formula[i] == '1')) && (i < formula.size() - 1))
-        {
-            buffer.push_back(formula[i]);
-            formula[i] = '_';
-            i++;
-            while (((formula[i] >= 65 && formula[i] <= 90) || (formula[i] >= 48 && formula[i] <= 57)) && (i < formula.size() - 1))
-            {
-                buffer.push_back(formula[i]);
-                formula[i] = '_';
-                i++;
-            }
-            variables.insert(buffer);
-        }
-        */
-
     }
     bool isThereNoWrongSymbols = 1; //проверяем строку на наличие незамененных символов
     for (int i = 0; i < formula.size(); i++)
-        if ((formula[i] >= 65 && formula[i] <= 90) || (formula[i] >= 48 && formula[i] <= 57))
+        if ((formula[i] >= 65 && formula[i] <= 90) || (formula[i] == '0' || formula[i] == '1'))
             isThereNoWrongSymbols = 0;
     return isThereNoWrongSymbols;
-}
+} 
 
 bool CheckSymbolsAroundOperator(string formula, int i)
 {
     char previousSymbol = formula[i - 1];
-    if (((previousSymbol >= 65 && previousSymbol <= 90) || (previousSymbol >= 48 && previousSymbol <= 57) || (previousSymbol == ')') || (previousSymbol == '('))) {
+    if (((previousSymbol >= 65 && previousSymbol <= 90) || (previousSymbol == '0' || previousSymbol == '1') || (previousSymbol == ')') || (previousSymbol == '('))) {
         char postNextSymbol = formula[i + 2];
-        if (((postNextSymbol >= 65 && postNextSymbol <= 90) || (postNextSymbol >= 48 && postNextSymbol <= 57) || (postNextSymbol == ')') || (postNextSymbol == '(')))
+        if (((postNextSymbol >= 65 && postNextSymbol <= 90) || (postNextSymbol == '0' || postNextSymbol == '1') || (postNextSymbol == ')') || (postNextSymbol == '(')))
             return 1;
     }
     return 0;
-} //Сделал
+} 
 
 bool CheckOperators(string formula)
 {
@@ -316,20 +293,6 @@ bool isFormula(string formula)
         return 1;
     if ((formula[0] >= 65 && formula[0] <= 90) && formula.size() == 1) //проверка формулы состоящей из одной константы
         return 1;
-    /*if (formula[0] >= 65 && formula[0] <= 90)     //проверка формулы состоящей из одной переменной
-    {
-        int i = 0;
-        if (i + 1 < formula.size() && (formula[i + 1] >= 49 && formula[i + 1] <= 57))
-            while ((formula[i + 1] >= 48 && formula[i + 1] <= 57) && i + 1 < formula.size())
-            {
-                i++;
-            }
-        if (i == formula.size() - 1)
-            return 1;
-        else
-            return 0;
-    }
-    */
     if (!BraсketCheck(formula))//проверка скобок
         return 0;
     if (!AlphabetCheck(formula))//проверка алфавита
