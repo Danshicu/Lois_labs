@@ -38,22 +38,28 @@ bool BraсketCheck(string formula) // проверка формулы на соответствие количества
 {
     if (formula[0] != '(' || formula[formula.size() - 1] != ')')
         return 0;
-    int capOfBrakets = 0;
+    int capOfBrackets = 0;
     for (int i = 0; i < formula.size(); i++)
     {
         if (formula[i] == '(')
-            capOfBrakets++;
+        {
+            capOfBrackets++;
+            continue;
+        }
         if (formula[i] == ')')
-            capOfBrakets--;
+        {
+            capOfBrackets--;
+            continue;
+        }
     }
-    if (capOfBrakets == 0)
+    if (capOfBrackets == 0)
         return 1;
     else
         return 0;
-} //Сделал
+}
 bool AlphabetCheck(string formula) //проверка формулы на символы принадлежащие алфавиту
 {
-    vector <char> symbols = { '!', '(', ')', '~', '/', '\\', '.', '-', '>' };
+    vector <char> symbols = { '!', '(', ')', '~', '/', '\\', '-', '>' };
     for (int i = 0; i < formula.size(); i++)
     {
         bool out = 0;
@@ -71,7 +77,7 @@ bool AlphabetCheck(string formula) //проверка формулы на символы принадлежащие а
             return 0;
     }
     return 1;
-} //Сделал
+}
 bool ParseFormula(string formula, vector <LogicalThing>& ParsedVector) // парсинг формулы на логические элементы
 {
     for (int i = 0; i < formula.size(); i++)
@@ -99,10 +105,9 @@ bool ParseFormula(string formula, vector <LogicalThing>& ParsedVector) // парсин
         }
         else if ((formula[i] == '/' && formula[i + 1] == '\\') || (formula[i] == '\\' && formula[i + 1] == '/') || (formula[i] == '-' && formula[i + 1] == '>')) //бинарные операторы из двух символов
         {
+            i += 1;
             newThing.isBinOperator = 1;
             ParsedVector.push_back(newThing);
-            i += 1;
-            continue;
         }
         else if (formula[i] == '~') //бинарные операторы из одного символа
         {
@@ -123,17 +128,21 @@ bool OneOperatorForOneBracketCheck(vector <LogicalThing> ParsedVector, int& inde
 {
     int capacityOfOperators = 0;
     bool isFuncTrue = 1;
-    for (index = index; index < ParsedVector.size() - 1; index++)
+    for (; index < ParsedVector.size() - 1; index++)
     {
         LogicalThing thing = ParsedVector[index];
         if (thing.isBinOperator == 1 || thing.isUnOperator == 1)
+        {
             capacityOfOperators++;
+            continue;
+        }
         if (thing.isInBracket == 1)
         {
             index++;
             isFuncTrue = OneOperatorForOneBracketCheck(ParsedVector, index);
+            continue;
         }
-        else if (thing.isOutBracket == 1)
+        if (thing.isOutBracket == 1)
             break;
     }
     if (isFuncTrue == 1) {
@@ -144,7 +153,7 @@ bool OneOperatorForOneBracketCheck(vector <LogicalThing> ParsedVector, int& inde
     }
     else
         return 0;
-} //Сделал
+}
 bool DoubleBracketCheck(vector <LogicalThing> ParsedVector) // проверка на наличие только одной пары скобок вокруг одного оператора
 {
     int capOfOperators = 0;
@@ -154,7 +163,7 @@ bool DoubleBracketCheck(vector <LogicalThing> ParsedVector) // проверка на налич
         LogicalThing thing = ParsedVector[i];
         if (thing.isBinOperator == 1 || thing.isUnOperator == 1)
         {
-            capOfOperators++; 
+            capOfOperators++;
             continue;
         }
         if (thing.isInBracket == 1)
@@ -166,7 +175,7 @@ bool DoubleBracketCheck(vector <LogicalThing> ParsedVector) // проверка на налич
     if (capOfBrackets != capOfOperators)
         return 0;
     return 1;
-} //Сделал
+}
 bool LogicalCheck(string formula) // проверка на расстановку элементов в формуле
 {
     vector <LogicalThing> parsedFormula;
@@ -176,14 +185,14 @@ bool LogicalCheck(string formula) // проверка на расстановку элементов в формуле
         return 0;
     if (parsedFormula.size() < 3)
         return 0;
-    int zero = 0;
-    if (!OneOperatorForOneBracketCheck(parsedFormula, zero)) // прверка на один оператор на пару скобок
+    int leftBracket = 0;
+    if (!OneOperatorForOneBracketCheck(parsedFormula, leftBracket)) // прверка на один оператор на пару скобок
         return 0;
     if (!DoubleBracketCheck(parsedFormula)) // проверка на дублирующиеся скобки
         return 0;
     for (int i = 0; i < parsedFormula.size(); i++)
     {
-        if (i == parsedFormula.size() - 1 && parsedFormula[i].isOutBracket == 1) // проверка на скобку в начеле и конце
+        if (i == parsedFormula.size() - 1 && parsedFormula[i].isOutBracket == 1) // проверка на скобку в начале и конце
             return 1;
         if (parsedFormula[i].isInBracket == 1) //проверка последующих логических элементов после открывающей скобки
         {
@@ -220,7 +229,7 @@ bool VariablesCheck(string formula, set <string>& variables) //проверка переменн
         string buffer = "";
         if ((formula[i] == '0' || formula[i] == '1') && i <= formula.size() - 1)
         {
-            if (!((formula[i + 1] >= 65 && formula[i + 1] <= 90) || (formula[i + 1] == '0' || formula[i+1] == '1')))
+            if (!((formula[i + 1] >= 65 && formula[i + 1] <= 90) || (formula[i + 1] == '0' || formula[i + 1] == '1')))
                 formula[i] = '_';
             else
                 continue;
@@ -242,7 +251,7 @@ bool VariablesCheck(string formula, set <string>& variables) //проверка переменн
         if ((formula[i] >= 65 && formula[i] <= 90) || (formula[i] == '0' || formula[i] == '1'))
             isThereNoWrongSymbols = 0;
     return isThereNoWrongSymbols;
-} 
+}
 
 bool CheckSymbolsAroundOperator(string formula, int i)
 {
@@ -253,7 +262,7 @@ bool CheckSymbolsAroundOperator(string formula, int i)
             return 1;
     }
     return 0;
-} 
+}
 
 bool CheckOperators(string formula)
 {
@@ -286,8 +295,7 @@ bool CheckOperators(string formula)
     return 1;
 }
 
-// Функция проверки принадлежности языку
-bool isFormula(string formula)
+bool isFormula(string formula) // Функция проверки принадлежности языку
 {
     if ((formula[0] == '1' || formula[0] == '0') && formula.size() == 1) //проверка формулы состоящей из одной константы
         return 1;
@@ -322,33 +330,27 @@ void SearchForClosingBracket(string formula, int firstBracket, int& output) //по
             break;
         }
     }
-} //Сделал
+}
 void AddSubformula(string formula, int firstBracket, int secondBracket, set <string>& subFormuls) // добавить подформулу в множество подформул
 {
     string substring = "";
     for (int i = firstBracket; i <= secondBracket; i++)
         substring.push_back(formula[i]);
     subFormuls.insert(substring);
-} //Сделал
+}
 
 set <string> FindSubformuls(string formula) // поиск подформул
 {
     set <string> unicFormula;
-
-    if ((formula[0] == '1' || formula[0] == '0') && formula.size() == 1) //проверка формулы состоящей из одной константы
-    {
-        unicFormula.insert(formula);
-        return unicFormula;
-    }
-
-    if (formula[0] >= 65 && formula[0] <= 90)     //если формула начинается с буква
-    {
-        unicFormula.insert(formula);
-        return unicFormula;
+    if (formula.size() == 1) {
+        if (formula[0] == '1' || formula[0] == '0' || (formula[0] >= 65 && formula[0] <= 90)) //проверка формулы состоящей из одной константы
+        {
+            unicFormula.insert(formula);
+            return unicFormula;
+        }
     }
 
     VariablesCheck(formula, unicFormula);// поиск атомарных формул
-
 
     int nextBracket = 0;
     for (int i = 0; i < formula.size(); i++) //поиск подформул в строке
@@ -362,7 +364,6 @@ set <string> FindSubformuls(string formula) // поиск подформул
 
     return unicFormula;
 }
-
 
 
 int main() {
