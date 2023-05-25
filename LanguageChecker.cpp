@@ -227,14 +227,7 @@ bool VariablesCheck(string formula, set <string>& variables) //проверка переменн
     for (int i = 0; i < formula.size(); i++) //перебирая строку находим букву
     { // заменяем букву и все дальнейшие символы соответствующие синтаксису на "_"
         string buffer = "";
-        if ((formula[i] == '0' || formula[i] == '1') && i <= formula.size() - 1)
-        {
-            if (!((formula[i + 1] >= 65 && formula[i + 1] <= 90) || (formula[i + 1] == '0' || formula[i + 1] == '1')))
-                formula[i] = '_';
-            else
-                continue;
-        }
-        if ((formula[i] >= 65 && formula[i] <= 90) && i <= formula.size() - 1)
+        if (formula[i] == '0' || formula[i] == '1' || (formula[i] >= 65 && formula[i] <= 90))
         {
             if (!((formula[i + 1] >= 65 && formula[i + 1] <= 90) || (formula[i + 1] == '0' || formula[i + 1] == '1')))
             {
